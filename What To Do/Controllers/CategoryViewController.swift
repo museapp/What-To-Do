@@ -8,35 +8,38 @@
 
 import UIKit
 import RealmSwift
-class CategoryViewController: UITableViewController {
+import ChameleonFramework
+class CategoryViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     var categoryArray: Results<Category>?
     
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategories()
-        //Mark : - TableView DataSource Methods
         
-        //Mark : - Data Manipulation Methods
-        
-        //Mark : - Add New Categories
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categoryArray?.count ?? 1
     }
+
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added Yet"
         
+        cell.backgroundColor = UIColor(gradientStyle: .topToBottom, withFrame: , andColors: <#T##[UIColor]#>)
+        tableView.separatorStyle = .none
         return cell
     }
+    
+    
+    
+
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
@@ -61,6 +64,7 @@ class CategoryViewController: UITableViewController {
             
             let newCategory = Category()
             newCategory.name = textField.text!
+            newCategory.backgroundColour = UIColor.randomFlat.hexValue()
             self.save(category: newCategory)
             
             
@@ -93,6 +97,23 @@ class CategoryViewController: UITableViewController {
 
     }
     
+    // delete data
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let categoryForDeletion = self.categoryArray?[indexPath.row]{
+            
+            //super.updateModel(at: indexPath)
+                    do{
+                        try self.realm.write {
+                        self.realm.delete(categoryForDeletion)
+                            }
+                        }
+                    catch{
+                        print("Cannot Delete Category \(error)")
+                        }
+                                //           tableView.reloadData()
+        }
+    }
 
 }
 //Search bar
@@ -114,3 +135,6 @@ extension CategoryViewController: UISearchBarDelegate {
         }
     }
 }
+
+
+
