@@ -8,9 +8,12 @@
 
 import UIKit
 import RealmSwift
+import  ChameleonFramework
 class ToDoListViewController: SwipeTableViewController {
-
+    @IBOutlet weak var searchBarOutlet: UISearchBar!
+    
     var itemResults: Results<Item>?
+    var colourgrade: CGFloat = 0.5
     var selectedCategory : Category? {
         didSet{
             loadData()
@@ -21,12 +24,43 @@ class ToDoListViewController: SwipeTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.separatorStyle = .none
         
-         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        // print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+      
+        
         
 //        loadData()
         
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        title = selectedCategory!.name
+         guard let coloutHex = selectedCategory?.backgroundColour else {fatalError()}
+        updateNavbar(withHexCode: coloutHex)
+            
+        }
+            
+    override func viewWillDisappear(_ animated: Bool) {
+       updateNavbar(withHexCode: "FF5733")
+    }
+            
+    func updateNavbar(withHexCode colourHexCode:String ){
+        
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist")}
+        
+        guard let navBarColour = UIColor(hexString: colourHexCode) else {fatalError()}
+        
+        navBar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+        navBar.barTintColor = navBarColour
+        searchBarOutlet.barTintColor = navBarColour
+        navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor: ContrastColorOf(navBarColour, returnFlat: true)]
+        
+        
+    }
+    
+
 
     
     // popoylate how many rows our table have
@@ -44,6 +78,12 @@ class ToDoListViewController: SwipeTableViewController {
         if let item = itemResults?[indexPath.row]{
             
             cell.textLabel?.text = item.title
+            
+            if let colour = UIColor(hexString: selectedCategory!.backgroundColour)?.darken(byPercentage:CGFloat(indexPath.row) / CGFloat(CGFloat(itemResults!.count)/CGFloat(colourgrade))){
+                cell.backgroundColor = colour
+                cell.textLabel?.textColor = ContrastColorOf(colour, returnFlat: true)
+            }
+            
             
             //ternary opration
             //also you can remove ==true to shorten the code
